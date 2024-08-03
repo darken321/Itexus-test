@@ -3,13 +3,14 @@ package by.task.testTask.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -23,7 +24,12 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Positive(message = "id must be positive")
+    int id;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @Size(max = 3, message = "A user can have at most 3 phones")
+    List<Phone> phones = new ArrayList<>();
 
     @Column(name = "first_name", nullable = false)
     @NotEmpty(message = "First name is required")
@@ -44,9 +50,5 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     @Size(max = 3, message = "A user can have at most 3 roles")
-    Set<Role> roles = new HashSet<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @Size(max = 3, message = "A user can have at most 3 phones")
-    Set<Phone> phones = new HashSet<>();
+    List<Role> roles = new ArrayList<>();
 }

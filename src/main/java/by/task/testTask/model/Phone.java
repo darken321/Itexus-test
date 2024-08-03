@@ -15,12 +15,17 @@ public class Phone {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    int id;
 
-    @Column(name = "number", nullable = false)
-    String number;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     User user;
+
+    @Column(name = "number", nullable = false)
+    Long number;
+
+    public Phone(int id, Long number) {
+        this.id = id;
+        this.number = number;
+    }
 }
