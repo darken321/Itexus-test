@@ -1,23 +1,27 @@
 package by.task.testTask.service;
 
-import by.task.testTask.dto.UserDto;
-import by.task.testTask.dto.UserSaveDto;
-import by.task.testTask.dto.UserUpdateDto;
+import by.task.testTask.dto.user.UserDto;
+import by.task.testTask.dto.user.UserSaveDto;
+import by.task.testTask.dto.user.UserUpdateDto;
 import by.task.testTask.mapper.UserMapper;
 import by.task.testTask.model.Role;
 import by.task.testTask.model.User;
 import by.task.testTask.repository.RoleRepository;
 import by.task.testTask.repository.UserRepository;
+import jakarta.persistence.EntityExistsException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
-
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -29,6 +33,11 @@ public class UserService {
 
     // Create
     public UserDto createUser(UserSaveDto dto) {
+
+        Optional<User> userWithSameEmail = userRepository.findByEmail(dto.getEmail());
+        if (userWithSameEmail.isPresent()) {
+            throw new EntityExistsException("Email " + dto.getEmail() + " is already in use by another user.");
+        }
         List<Role> roles = dto.getRoles().stream()
                 .map(roleName -> roleRepository.findByName(roleName)
                         .orElseGet(() -> roleRepository.save(new Role(roleName))))
@@ -54,30 +63,41 @@ public class UserService {
     }
 
     // Read
-    public Optional<UserDto> getUserById(int id) {
-        Optional<User> userOpt = userRepository.findById(id);
-        return userOpt.map(userMapper::toDto);
+    public UserDto getUserById(int id) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("User with id " + id + " not found"));
+        return userMapper.toDto(existingUser);
     }
 
     // Update
     public UserDto updateUser(int id, UserUpdateDto userDetails) {
         User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User with id " + id + " not found"));
+                .orElseThrow(() -> new NoSuchElementException("User with id " + id + " not found"));
+
+        Optional<User> userWithSameEmail = userRepository.findByEmail(userDetails.getEmail());
+        if (userWithSameEmail.isPresent() && !userWithSameEmail.get().getId().equals(id)) {
+            throw new EntityExistsException("Email " + userDetails.getEmail() + " is already in use by another user.");
+        }
 
         existingUser.setFirstName(userDetails.getFirstName());
         existingUser.setLastName(userDetails.getLastName());
         existingUser.setEmail(userDetails.getEmail());
-        existingUser.setPhones(new ArrayList<>(userDetails.getPhones())); // Ensure phones list is mutable
+        existingUser.setPhones(new ArrayList<>(userDetails.getPhones()));
 
         List<Role> roles = userDetails.getRoles().stream()
                 .map(role -> roleRepository.findByName(role.getName())
                         .orElseGet(() -> roleRepository.save(new Role(role.getName()))))
                 .toList();
-        existingUser.setRoles(new ArrayList<>(roles)); // Ensure roles list is mutable
+        existingUser.setRoles(new ArrayList<>(roles));
 
-        User updatedUser = userRepository.save(existingUser);
-        return userMapper.toDto(updatedUser);
+        try {
+            User updatedUser = userRepository.save(existingUser);
+            return userMapper.toDto(updatedUser);
+        } catch (DataAccessException ex) {
+            throw new RuntimeException("Database constraint violation occurred while updating user: " + ex.getMessage());
+        }
     }
+
 
     // Delete
     public boolean deleteUser(int id) {
@@ -85,6 +105,6 @@ public class UserService {
             userRepository.deleteById(id);
             return true;
         }
-        return false;
+        throw new NoSuchElementException("User with id " + id + " not found for deletion");
     }
 }

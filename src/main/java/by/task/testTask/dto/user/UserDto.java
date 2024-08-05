@@ -1,4 +1,4 @@
-package by.task.testTask.dto;
+package by.task.testTask.dto.user;
 
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;

@@ -1,4 +1,4 @@
-package by.task.testTask.dto;
+package by.task.testTask.dto.user;
 
 import by.task.testTask.model.Role;
 import jakarta.persistence.Column;
