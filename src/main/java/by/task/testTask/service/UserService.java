@@ -14,6 +14,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,13 +67,13 @@ public class UserService {
         existingUser.setFirstName(userDetails.getFirstName());
         existingUser.setLastName(userDetails.getLastName());
         existingUser.setEmail(userDetails.getEmail());
-        existingUser.setPhones(userDetails.getPhones());
+        existingUser.setPhones(new ArrayList<>(userDetails.getPhones())); // Ensure phones list is mutable
 
         List<Role> roles = userDetails.getRoles().stream()
                 .map(role -> roleRepository.findByName(role.getName())
                         .orElseGet(() -> roleRepository.save(new Role(role.getName()))))
                 .toList();
-        existingUser.setRoles(roles);
+        existingUser.setRoles(new ArrayList<>(roles)); // Ensure roles list is mutable
 
         User updatedUser = userRepository.save(existingUser);
         return userMapper.toDto(updatedUser);
