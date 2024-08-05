@@ -18,7 +18,7 @@ import java.util.List;
 public class UserDto {
 
     @Positive(message = "id must be positive")
-    int id;
+    Integer id;
 
     @NotEmpty(message = "First name is required")
     String firstName;

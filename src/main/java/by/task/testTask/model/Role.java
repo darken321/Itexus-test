@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Data
 @Builder
@@ -15,8 +18,12 @@ public class Role {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    Integer id;
 
     @Column(name = "name", nullable = false, unique = true)
     String name;
+
+    public Role(String roleName) {
+        this.name = roleName;
+    }
 }

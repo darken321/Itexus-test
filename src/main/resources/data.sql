@@ -10,12 +10,13 @@ INSERT INTO users (first_name, last_name, email) VALUES ('Ник', 'Иванов
 INSERT INTO users (first_name, last_name, email) VALUES ('Майк', 'Петров', 'mike.doe@example.com');
 
 -- Вставка телефонов
-INSERT INTO phones (number, user_id) VALUES ('375331234567', 1);
-INSERT INTO phones (number, user_id) VALUES ('375441234588', 2);
-INSERT INTO phones (number, user_id) VALUES ('375001234599', 3);
-INSERT INTO phones (number, user_id) VALUES ('375221234567', 4);
-INSERT INTO phones (number, user_id) VALUES ('375991234567', 4);
-INSERT INTO phones (number, user_id) VALUES ('375881234567', 4);
+INSERT INTO user_phones (user_id, phone_number) VALUES (1, 375331234567);
+INSERT INTO user_phones (user_id, phone_number) VALUES (2, 375441234588);
+INSERT INTO user_phones (user_id, phone_number) VALUES (3, 375001234599);
+INSERT INTO user_phones (user_id, phone_number) VALUES (4, 375221234567);
+INSERT INTO user_phones (user_id, phone_number) VALUES (4, 375991234567);
+INSERT INTO user_phones (user_id, phone_number) VALUES (4, 375881234567);
+
 
 -- Вставка связей между пользователями и ролями
 -- Админ

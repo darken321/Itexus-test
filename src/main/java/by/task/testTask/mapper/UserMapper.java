@@ -3,7 +3,6 @@ package by.task.testTask.mapper;
 
 import by.task.testTask.dto.UserDto;
 import by.task.testTask.dto.UserSaveDto;
-import by.task.testTask.model.Phone;
 import by.task.testTask.model.Role;
 import by.task.testTask.model.User;
 import lombok.AllArgsConstructor;
@@ -19,7 +18,14 @@ public class UserMapper {
     private final ModelMapper modelMapper;
 
     public User fromDto(UserSaveDto dto) {
-        return modelMapper.map(dto, User.class);
+        User user = User.builder()
+                .firstName(dto.getFirstName())
+                .lastName(dto.getLastName())
+                .email(dto.getEmail())
+                .phones(dto.getPhones())
+                .roles(convertStringsToRoles(dto.getRoles()))
+                .build();
+        return user;
     }
 
     public User fromDto(UserDto dto) {
@@ -33,20 +39,21 @@ public class UserMapper {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())
-                .phones(convertPhonesToLongs(user.getPhones()))
+                .phones(user.getPhones())
                 .roles(convertRolesToStrings(user.getRoles()))
                 .build();
     }
 
-    private List<Long> convertPhonesToLongs(List<Phone> phones) {
-        return phones.stream()
-                .map(Phone::getNumber)
-                .toList();
-    }
 
     private List<String> convertRolesToStrings(List<Role> roles) {
         return roles.stream()
                 .map(Role::getName)
+                .toList();
+    }
+
+    private List<Role> convertStringsToRoles(List<String> roleNames) {
+        return roleNames.stream()
+                .map(name -> Role.builder().name(name).build())
                 .toList();
     }
 }

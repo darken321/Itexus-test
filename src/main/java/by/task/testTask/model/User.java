@@ -25,11 +25,13 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Positive(message = "id must be positive")
-    int id;
+    Integer id;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_phones", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "phone_number")
     @Size(max = 3, message = "A user can have at most 3 phones")
-    List<Phone> phones = new ArrayList<>();
+    List<Long> phones = new ArrayList<>();
 
     @Column(name = "first_name", nullable = false)
     @NotEmpty(message = "First name is required")
@@ -51,4 +53,12 @@ public class User {
     )
     @Size(max = 3, message = "A user can have at most 3 roles")
     List<Role> roles = new ArrayList<>();
+
+    public void addPhone(Long phone) {
+        this.phones.add(phone);
+    }
+
+    public void addRole(Role role) {
+        this.roles.add(role);
+    }
 }

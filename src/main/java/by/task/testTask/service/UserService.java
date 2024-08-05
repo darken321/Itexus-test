@@ -3,29 +3,44 @@ package by.task.testTask.service;
 import by.task.testTask.dto.UserDto;
 import by.task.testTask.dto.UserSaveDto;
 import by.task.testTask.mapper.UserMapper;
-import by.task.testTask.model.Phone;
 import by.task.testTask.model.Role;
 import by.task.testTask.model.User;
+import by.task.testTask.repository.RoleRepository;
 import by.task.testTask.repository.UserRepository;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-
+    private final RoleRepository roleRepository;
 
     // Create
-    public UserDto createUser(UserSaveDto userDto) {
-        User user = userMapper.fromDto(userDto);
-        User savedUser = userRepository.save(user);
-        return userMapper.toDto(savedUser);
+    public UserDto createUser(UserSaveDto dto) {
+        List<Role> roles = dto.getRoles().stream()
+                .map(roleName -> roleRepository.findByName(roleName)
+                        .orElseGet(() -> roleRepository.save(new Role(roleName))))
+                .toList();
+
+        User user = User.builder()
+                .firstName(dto.getFirstName())
+                .lastName(dto.getLastName())
+                .roles(roles)
+                .email(dto.getEmail())
+                .phones(dto.getPhones())
+                .build();
+
+        return userMapper.toDto(userRepository.save(user));
     }
 
     // Read All
@@ -50,8 +65,8 @@ public class UserService {
                     existingUser.setFirstName(userDetails.getFirstName());
                     existingUser.setLastName(userDetails.getLastName());
                     existingUser.setEmail(userDetails.getEmail());
-                    existingUser.setPhones(convertLongsToPhones(userDetails.getPhones()));
-                    existingUser.setRoles(convertStringsToRoles(userDetails.getRoles()));
+//                    existingUser.setPhones(convertLongsToPhones(userDetails.getPhones()));
+//                    existingUser.setRoles(convertStringsToRoles(userDetails.getRoles()));
                     User updatedUser = userRepository.save(existingUser);
                     return userMapper.toDto(updatedUser);
                 });
@@ -65,19 +80,4 @@ public class UserService {
         }
         return false;
     }
-
-    //TODO переделать
-    private List<Phone> convertLongsToPhones(List<Long> phoneNumbers) {
-        return phoneNumbers.stream()
-                .map(number -> new Phone(0, number))
-                .toList();
-    }
-
-    private List<Role> convertStringsToRoles(List<String> roles) {
-        return roles.stream()
-                .map(role -> new Role(0, role))
-                .toList();
-    }
-
-
 }

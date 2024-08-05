@@ -1,6 +1,5 @@
 package by.task.testTask.dto;
 
-import by.task.testTask.model.Phone;
 import by.task.testTask.model.Role;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
@@ -24,7 +23,7 @@ import java.util.List;
 public class UserUpdateDto {
 
     @Positive(message = "id must be positive")
-    int id;
+    Integer id;
 
     @NotEmpty(message = "First name is required")
     String firstName;
@@ -38,7 +37,7 @@ public class UserUpdateDto {
 
     @Size(max = 3, message = "A user can have at most 3 phones")
     @NotNull
-    List<Phone> phones = new ArrayList<>();
+    List<Long> phones = new ArrayList<>();
 
 
     @Size(max = 3, message = "A user can have at most 3 roles")
