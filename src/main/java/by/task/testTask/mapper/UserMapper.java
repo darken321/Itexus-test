@@ -1,8 +1,8 @@
 package by.task.testTask.mapper;
 
 
-import by.task.testTask.dto.UserDto;
-import by.task.testTask.dto.UserSaveDto;
+import by.task.testTask.dto.user.UserDto;
+import by.task.testTask.dto.user.UserSaveDto;
 import by.task.testTask.model.Role;
 import by.task.testTask.model.User;
 import lombok.AllArgsConstructor;
