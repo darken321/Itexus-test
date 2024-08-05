@@ -18,14 +18,9 @@ public class UserMapper {
     private final ModelMapper modelMapper;
 
     public User fromDto(UserSaveDto dto) {
-        User user = User.builder()
-                .firstName(dto.getFirstName())
-                .lastName(dto.getLastName())
-                .email(dto.getEmail())
-                .phones(dto.getPhones())
-                .roles(convertStringsToRoles(dto.getRoles()))
-                .build();
-        return user;
+       User user = modelMapper.map(dto, User.class);
+       user.setRoles(convertStringsToRoles(dto.getRoles()));
+       return user;
     }
 
     public User fromDto(UserDto dto) {
@@ -33,15 +28,9 @@ public class UserMapper {
     }
 
     public UserDto toDto(User user) {
-
-        return UserDto.builder()
-                .id(user.getId())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
-                .phones(user.getPhones())
-                .roles(convertRolesToStrings(user.getRoles()))
-                .build();
+        UserDto userDto = modelMapper.map(user, UserDto.class);
+        userDto.setRoles(convertRolesToStrings(user.getRoles()));
+        return userDto;
     }
 
 

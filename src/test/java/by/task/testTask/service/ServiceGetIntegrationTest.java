@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,7 +60,7 @@ public class ServiceGetIntegrationTest {
         assertEquals(testUser.getFirstName(), userDto.getFirstName());
         assertEquals(testUser.getLastName(), userDto.getLastName());
         assertEquals(testUser.getEmail(), userDto.getEmail());
-        assertEquals(testUser.getPhones(), userDto.getPhones());
+        assertEquals(new ArrayList<>(testUser.getPhones()), userDto.getPhones());
         assertEquals(testUser.getRoles().stream().map(Role::getName).toList(), userDto.getRoles());
     }
 
