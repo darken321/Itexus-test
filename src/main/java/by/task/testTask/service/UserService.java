@@ -2,6 +2,7 @@ package by.task.testTask.service;
 
 import by.task.testTask.dto.UserDto;
 import by.task.testTask.dto.UserSaveDto;
+import by.task.testTask.dto.UserUpdateDto;
 import by.task.testTask.mapper.UserMapper;
 import by.task.testTask.model.Role;
 import by.task.testTask.model.User;
@@ -58,18 +59,23 @@ public class UserService {
     }
 
     // Update
-    //TODO переделать
-    public Optional<UserDto> updateUser(int id, UserDto userDetails) {
-        return userRepository.findById(id)
-                .map(existingUser -> {
-                    existingUser.setFirstName(userDetails.getFirstName());
-                    existingUser.setLastName(userDetails.getLastName());
-                    existingUser.setEmail(userDetails.getEmail());
-//                    existingUser.setPhones(convertLongsToPhones(userDetails.getPhones()));
-//                    existingUser.setRoles(convertStringsToRoles(userDetails.getRoles()));
-                    User updatedUser = userRepository.save(existingUser);
-                    return userMapper.toDto(updatedUser);
-                });
+    public UserDto updateUser(int id, UserUpdateDto userDetails) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User with id " + id + " not found"));
+
+        existingUser.setFirstName(userDetails.getFirstName());
+        existingUser.setLastName(userDetails.getLastName());
+        existingUser.setEmail(userDetails.getEmail());
+        existingUser.setPhones(userDetails.getPhones());
+
+        List<Role> roles = userDetails.getRoles().stream()
+                .map(role -> roleRepository.findByName(role.getName())
+                        .orElseGet(() -> roleRepository.save(new Role(role.getName()))))
+                .toList();
+        existingUser.setRoles(roles);
+
+        User updatedUser = userRepository.save(existingUser);
+        return userMapper.toDto(updatedUser);
     }
 
     // Delete

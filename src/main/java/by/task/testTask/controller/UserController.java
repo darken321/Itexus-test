@@ -2,9 +2,11 @@ package by.task.testTask.controller;
 
 import by.task.testTask.dto.UserDto;
 import by.task.testTask.dto.UserSaveDto;
+import by.task.testTask.dto.UserUpdateDto;
 import by.task.testTask.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,15 +53,12 @@ public class UserController {
 
     // Update
     @PutMapping("/{id}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable int id, @RequestBody UserDto userDto) {
-        Optional<UserDto> updatedUserOpt = userService.updateUser(id, userDto);
-        if (updatedUserOpt.isPresent()) {
-            UserDto updatedUser = updatedUserOpt.get();
-            log.info("Updated user with id {}: {}", id, updatedUser);
+    public ResponseEntity<UserDto> updateUser(@PathVariable int id, @RequestBody UserUpdateDto userDto) {
+        try {
+            UserDto updatedUser = userService.updateUser(id, userDto);
             return ResponseEntity.ok(updatedUser);
-        } else {
-            log.warn("User with id {} not found for update", id);
-            return ResponseEntity.notFound().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 

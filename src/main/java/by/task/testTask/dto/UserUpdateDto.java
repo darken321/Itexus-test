@@ -22,9 +22,6 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserUpdateDto {
 
-    @Positive(message = "id must be positive")
-    Integer id;
-
     @NotEmpty(message = "First name is required")
     String firstName;
 
@@ -38,7 +35,6 @@ public class UserUpdateDto {
     @Size(max = 3, message = "A user can have at most 3 phones")
     @NotNull
     List<Long> phones = new ArrayList<>();
-
 
     @Size(max = 3, message = "A user can have at most 3 roles")
     @NotNull
