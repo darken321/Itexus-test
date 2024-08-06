@@ -27,23 +27,23 @@ public class User {
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_phones", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "phone_number")
+    @Column(name = "number")
     @Valid
     @Size(min = 1, max = 3, message = "A user must have 1 to 3 phones, please try again")
-//    @NotBlank(message = "Phone number is blank, please fill in")
     List<PhoneNumber> phones = new ArrayList<>();
 
     @Column(name = "first_name", nullable = false)
-    @NotEmpty(message = "First name is required, please fill in")
     @NotBlank(message = "First name is blank, please fill in")
     String firstName;
 
-    @Column(name = "last_name", nullable = false)
+    @Column(name = "last_name")
     String lastName;
 
     @Column(name = "email", nullable = false, unique = true)
+    @NotNull(message = "Email is required")
+    @NotBlank(message = "Email cannot be blank, please try again")
     @Email(message = "Email should be valid, please try again")
-    @NotEmpty(message = "Email is required, please fill in")
+    @Pattern(regexp = ".+@.+\\..+", message = "Email should be valid")
     String email;
 
     @ManyToMany(fetch = FetchType.EAGER)

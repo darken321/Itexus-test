@@ -91,8 +91,8 @@ public class UserService {
         existingUser.setPhones(new ArrayList<>(convertStringToPhones(userDetails.getPhones())));
 
         List<Role> roles = userDetails.getRoles().stream()
-                .map(role -> roleRepository.findByName(role.getName())
-                        .orElseGet(() -> roleRepository.save(new Role(role.getName()))))
+                .map(role -> roleRepository.findByName(role)
+                        .orElseGet(() -> roleRepository.save(new Role(role))))
                 .toList();
         existingUser.setRoles(new ArrayList<>(roles));
 
@@ -103,7 +103,6 @@ public class UserService {
             throw new RuntimeException("Database constraint violation occurred while updating user: " + ex.getMessage());
         }
     }
-
 
     // Delete
     public boolean deleteUser(int id) {

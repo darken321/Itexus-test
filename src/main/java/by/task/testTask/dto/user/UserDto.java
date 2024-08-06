@@ -20,21 +20,22 @@ public class UserDto {
     @Positive(message = "id must be positive")
     Integer id;
 
-    @NotEmpty(message = "First name is required")
+    @NotBlank(message = "First name is required")
     String firstName;
 
-    @Column(name = "last_name", nullable = false)
     String lastName;
 
-    @Email(message = "Email should be valid")
-    @NotEmpty(message = "Email is required")
+    @NotNull(message = "Email is required")
+    @NotBlank(message = "Email cannot be blank, please try again")
+    @Email(message = "Email should be valid, please try again")
+    @Pattern(regexp = ".+@.+\\..+", message = "Email should be valid")
     String email;
 
-    @Size(max = 3, message = "A user can have at most 3 phones")
     @NotNull
+    @Size(min = 1, max = 3, message = "A user must have 1 to 3 phones, please try again")
     List<String> phones = new ArrayList<>();
 
-    @Size(max = 3, message = "A user can have at most 3 roles")
     @NotNull
+    @Size(min = 1, max = 3,message = "A user must have 1 to 3 roles, please try again")
     List<String> roles = new ArrayList<>();
 }
