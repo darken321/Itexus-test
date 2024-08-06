@@ -34,7 +34,7 @@ public class UserUpdateDto {
 
     @Size(max = 3, message = "A user can have at most 3 phones")
     @NotNull
-    List<Long> phones = new ArrayList<>();
+    List<String> phones = new ArrayList<>();
 
     @Size(max = 3, message = "A user can have at most 3 roles")
     @NotNull

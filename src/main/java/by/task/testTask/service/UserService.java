@@ -4,6 +4,7 @@ import by.task.testTask.dto.user.UserDto;
 import by.task.testTask.dto.user.UserSaveDto;
 import by.task.testTask.dto.user.UserUpdateDto;
 import by.task.testTask.mapper.UserMapper;
+import by.task.testTask.model.PhoneNumber;
 import by.task.testTask.model.Role;
 import by.task.testTask.model.User;
 import by.task.testTask.repository.RoleRepository;
@@ -48,10 +49,15 @@ public class UserService {
                 .lastName(dto.getLastName())
                 .roles(roles)
                 .email(dto.getEmail())
-                .phones(dto.getPhones())
+                .phones(convertStringToPhones(dto.getPhones()))
                 .build();
 
         return userMapper.toDto(userRepository.save(user));
+    }
+
+    private List<PhoneNumber> convertStringToPhones(List<String> phones) {
+        return phones.stream().map(PhoneNumber::new).toList();
+
     }
 
     // Read All
@@ -82,7 +88,7 @@ public class UserService {
         existingUser.setFirstName(userDetails.getFirstName());
         existingUser.setLastName(userDetails.getLastName());
         existingUser.setEmail(userDetails.getEmail());
-        existingUser.setPhones(new ArrayList<>(userDetails.getPhones()));
+        existingUser.setPhones(new ArrayList<>(convertStringToPhones(userDetails.getPhones())));
 
         List<Role> roles = userDetails.getRoles().stream()
                 .map(role -> roleRepository.findByName(role.getName())

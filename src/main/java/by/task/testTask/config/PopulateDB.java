@@ -1,6 +1,7 @@
 package by.task.testTask.config;
 
 import by.task.testTask.mapper.UserMapper;
+import by.task.testTask.model.PhoneNumber;
 import by.task.testTask.model.Role;
 import by.task.testTask.model.User;
 import by.task.testTask.repository.RoleRepository;
@@ -39,9 +40,9 @@ public class PopulateDB {
                 .build();
 
         //добавил к нему телефоны
-        user.addPhone(175000236589L);
-        user.addPhone(175000236590L);
-        user.addPhone(175000236591L);
+        user.addPhone(new PhoneNumber("175000236589"));
+        user.addPhone(new PhoneNumber("175000236590"));
+        user.addPhone(new PhoneNumber("175000236591"));
         //сохранил юзера
         userRepository.save(user);
     }
