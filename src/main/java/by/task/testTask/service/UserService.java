@@ -10,17 +10,17 @@ import by.task.testTask.model.User;
 import by.task.testTask.repository.RoleRepository;
 import by.task.testTask.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import jakarta.validation.Validator;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -31,6 +31,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final RoleRepository roleRepository;
+    private final Validator validator;
 
     // Create
     public UserDto createUser(UserSaveDto dto) {
@@ -40,8 +41,7 @@ public class UserService {
             throw new EntityExistsException("Email " + dto.getEmail() + " is already in use by another user.");
         }
         List<Role> roles = dto.getRoles().stream()
-                .map(roleName -> roleRepository.findByName(roleName)
-                        .orElseGet(() -> roleRepository.save(new Role(roleName))))
+                .map(this::getOrCreateRole)
                 .toList();
 
         User user = User.builder()
@@ -49,7 +49,7 @@ public class UserService {
                 .lastName(dto.getLastName())
                 .roles(roles)
                 .email(dto.getEmail())
-                .phones(convertStringToPhones(dto.getPhones()))
+                .phones(new ArrayList<>(convertStringToPhones(dto.getPhones())))
                 .build();
 
         return userMapper.toDto(userRepository.save(user));
@@ -91,10 +91,11 @@ public class UserService {
         existingUser.setPhones(new ArrayList<>(convertStringToPhones(userDetails.getPhones())));
 
         List<Role> roles = userDetails.getRoles().stream()
-                .map(role -> roleRepository.findByName(role)
-                        .orElseGet(() -> roleRepository.save(new Role(role))))
+                .map(this::getOrCreateRole)
                 .toList();
         existingUser.setRoles(new ArrayList<>(roles));
+
+        validateUser(existingUser);
 
         try {
             User updatedUser = userRepository.save(existingUser);
@@ -111,5 +112,17 @@ public class UserService {
             return true;
         }
         throw new NoSuchElementException("User with id " + id + " not found for deletion");
+    }
+
+    Role getOrCreateRole(String roleName) {
+        return roleRepository.findByName(roleName)
+                .orElseGet(() -> roleRepository.save(new Role(roleName)));
+    }
+
+    private void validateUser(User user) {
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
     }
 }

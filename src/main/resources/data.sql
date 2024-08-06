@@ -1,7 +1,7 @@
 -- Вставка ролей
-INSERT INTO roles (name) VALUES ('ADMIN');
-INSERT INTO roles (name) VALUES ('MODERATOR');
-INSERT INTO roles (name) VALUES ('USER');
+INSERT INTO roles (name) VALUES ('ROLE_ADMIN');
+INSERT INTO roles (name) VALUES ('ROLE_MODERATOR');
+INSERT INTO roles (name) VALUES ('ROLE_USER');
 
 -- Вставка пользователей
 INSERT INTO users (first_name, last_name, email) VALUES ('Иван','Admin','admin@example.com');

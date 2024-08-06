@@ -4,11 +4,13 @@ import by.task.testTask.dto.user.UserDto;
 import by.task.testTask.dto.user.UserSaveDto;
 import by.task.testTask.dto.user.UserUpdateDto;
 import by.task.testTask.mapper.UserMapper;
+import by.task.testTask.model.PhoneNumber;
 import by.task.testTask.model.Role;
 import by.task.testTask.model.User;
 import by.task.testTask.repository.RoleRepository;
 import by.task.testTask.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,12 +47,13 @@ public class IntegrationTest {
         userRepository.deleteAll();
         roleRepository.deleteAll();
 
-        Role role = roleRepository.save(new Role("ROLE_USER"));
+        Role role = userService.getOrCreateRole("ROLE_USER");
+
         testUser = User.builder()
                 .firstName("John")
                 .lastName("Doe")
                 .email("john.doe@example.com")
-                .phones(List.of(123456789L))
+                .phones(List.of(new PhoneNumber("375123456789")))
                 .roles(List.of(role))
                 .build();
         testUser = userRepository.save(testUser);
@@ -62,7 +65,7 @@ public class IntegrationTest {
                 .firstName("Jane")
                 .lastName("Doe")
                 .email("jane.doe@example.com")
-                .phones(List.of(987654321L))
+                .phones(List.of("375987654321"))
                 .roles(List.of("ROLE_USER"))
                 .build();
 
@@ -73,7 +76,7 @@ public class IntegrationTest {
         assertThat(createdUser.getFirstName()).isEqualTo("Jane");
         assertThat(createdUser.getLastName()).isEqualTo("Doe");
         assertThat(createdUser.getEmail()).isEqualTo("jane.doe@example.com");
-        assertThat(createdUser.getPhones()).containsExactly(987654321L);
+        assertThat(createdUser.getPhones()).containsExactly("375987654321");
         assertThat(createdUser.getRoles()).containsExactly("ROLE_USER");
     }
 
@@ -83,7 +86,7 @@ public class IntegrationTest {
                 .firstName("John")
                 .lastName("Smith")
                 .email("john.doe@example.com")
-                .phones(List.of(123456789L))
+                .phones(List.of("375123456789"))
                 .roles(List.of("ROLE_ADMIN"))
                 .build();
 
@@ -112,13 +115,13 @@ public class IntegrationTest {
     }
 
     @Test
-    public void testUpdateUserUserExists() {
+    public void testUpdateUserExists() {
         UserUpdateDto userUpdateDto = UserUpdateDto.builder()
                 .firstName("Johnny")
                 .lastName("Doe")
                 .email("johnny.doe@example.com")
-                .phones(List.of(987654321L))
-                .roles(List.of(new Role("ROLE_ADMIN")))
+                .phones(List.of("375987654321"))
+                .roles(List.of("ROLE_ADMIN"))
                 .build();
 
         UserDto expectedUserDto = UserDto.builder()
@@ -126,7 +129,7 @@ public class IntegrationTest {
                 .firstName("Johnny")
                 .lastName("Doe")
                 .email("johnny.doe@example.com")
-                .phones(List.of(987654321L))
+                .phones(List.of("375987654321"))
                 .roles(List.of("ROLE_ADMIN"))
                 .build();
 
@@ -136,13 +139,13 @@ public class IntegrationTest {
     }
 
     @Test
-    public void testUpdateUserUserDoesNotExist() {
+    public void testUpdateUserDoesNotExist() {
         UserUpdateDto userUpdateDto = UserUpdateDto.builder()
                 .firstName("Johnny")
                 .lastName("Doe")
                 .email("johnny.doe@example.com")
-                .phones(List.of(987654321L))
-                .roles(List.of(new Role("ROLE_ADMIN")))
+                .phones(List.of("375987654321"))
+                .roles(List.of("ROLE_ADMIN"))
                 .build();
 
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> {
@@ -167,4 +170,73 @@ public class IntegrationTest {
 
         assertThat(exception.getMessage()).isEqualTo("User with id 999 not found for deletion");
     }
+
+    @Test
+    public void testCreateUserWithMoreThanThreePhones() {
+        UserSaveDto userSaveDto = UserSaveDto.builder()
+                .firstName("Jane")
+                .lastName("Doe")
+                .email("jane.doe@example.com")
+                .phones(List.of("375987654321", "375987654322", "375987654323", "375987654324"))
+                .roles(List.of("ROLE_USER"))
+                .build();
+
+        ConstraintViolationException exception = assertThrows(ConstraintViolationException.class, () -> {
+            userService.createUser(userSaveDto);
+        });
+
+        assertThat(exception.getMessage()).contains("A user must have 1 to 3 phones, please try again");
+    }
+
+    @Test
+    public void testCreateUserWithMoreThanThreeRoles() {
+        UserSaveDto userSaveDto = UserSaveDto.builder()
+                .firstName("Jane")
+                .lastName("Doe")
+                .email("jane.doe@example.com")
+                .phones(List.of("375987654321"))
+                .roles(List.of("ROLE_USER", "ROLE_ADMIN", "ROLE_MANAGER", "ROLE_SUPERVISOR"))
+                .build();
+
+        ConstraintViolationException exception = assertThrows(ConstraintViolationException.class, () -> {
+            userService.createUser(userSaveDto);
+        });
+
+        assertThat(exception.getMessage()).contains("A user must have 1 to 3 roles, please try again");
+    }
+
+    @Test
+    public void testCreateUserWithPhoneNumberHaving11Digits() {
+        UserSaveDto userSaveDto = UserSaveDto.builder()
+                .firstName("Jane")
+                .lastName("Doe")
+                .email("jane.doe@example.com")
+                .phones(List.of("37512345678")) // 11 digits
+                .roles(List.of("ROLE_USER"))
+                .build();
+
+        ConstraintViolationException exception = assertThrows(ConstraintViolationException.class, () -> {
+            userService.createUser(userSaveDto);
+        });
+
+        assertThat(exception.getMessage()).contains("Phone number must match the format 375*********");
+    }
+
+    @Test
+    public void testCreateUserWithPhoneNumberHaving13Digits() {
+        UserSaveDto userSaveDto = UserSaveDto.builder()
+                .firstName("Jane")
+                .lastName("Doe")
+                .email("jane.doe@example.com")
+                .phones(List.of("3751234567890")) // 13 digits
+                .roles(List.of("ROLE_USER"))
+                .build();
+
+        ConstraintViolationException exception = assertThrows(ConstraintViolationException.class, () -> {
+            userService.createUser(userSaveDto);
+        });
+
+        assertThat(exception.getMessage()).contains("Phone number must match the format 375*********");
+    }
+
 }
